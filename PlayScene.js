@@ -22,26 +22,30 @@ export default class PlayScene extends Phaser.Scene {
         const centerY = height / 2;
 
         this.add.image(centerX, centerY, 'campo').setDisplaySize(width, height);
-
         this.ultimoChuteBot = 0;
 
         const esquerda = width * 0.2;
         const direita = width * 0.8;
 
-        this.jogador1 = this.physics.add.image(esquerda, centerY, 'jogador1').setScale(0.2).setCollideWorldBounds(true).setBounce(0.9);
-        this.jogador2 = this.physics.add.image(direita, centerY, 'jogador2').setScale(0.2).setCollideWorldBounds(true).setBounce(0.9);
+        this.jogador1 = this.physics.add.image(esquerda, centerY, 'jogador1')
+            .setScale(0.2).setCollideWorldBounds(true).setBounce(0.9);
+        this.jogador2 = this.physics.add.image(direita, centerY, 'jogador2')
+            .setScale(0.2).setCollideWorldBounds(true).setBounce(0.9);
 
         this.posInicialJogador1 = { x: this.jogador1.x, y: this.jogador1.y };
         this.posInicialJogador2 = { x: this.jogador2.x, y: this.jogador2.y };
 
-        this.jogador1.body.setCircle(this.jogador1.displayWidth / 2 * 1.1);
-        this.jogador1.body.setOffset(this.jogador1.displayWidth / 2 - this.jogador1.body.halfWidth, this.jogador1.displayHeight / 2 - this.jogador1.body.halfHeight);
-        this.jogador2.body.setCircle(this.jogador2.displayWidth / 2 * 1.1);
-        this.jogador2.body.setOffset(this.jogador2.displayWidth / 2 - this.jogador2.body.halfWidth, this.jogador2.displayHeight / 2 - this.jogador2.body.halfHeight);
+        const raioJogador = this.jogador1.displayWidth / 2;
+        [this.jogador1, this.jogador2].forEach(j => {
+            j.body.setCircle(raioJogador);
+            j.body.setOffset(j.displayWidth / 2 - raioJogador, j.displayHeight / 2 - raioJogador);
+        });
 
-        this.bola = this.physics.add.image(centerX, centerY, 'bola').setScale(0.1).setCollideWorldBounds(true).setBounce(0.9);
-        this.bola.body.setCircle(this.bola.displayWidth / 2 * 1.05);
-        this.bola.body.setOffset(this.bola.displayWidth / 2 - this.bola.body.halfWidth, this.bola.displayHeight / 2 - this.bola.body.halfHeight);
+        this.bola = this.physics.add.image(centerX, centerY, 'bola')
+            .setScale(0.15).setCollideWorldBounds(true).setBounce(0.9);
+        const raioBola = this.bola.displayWidth / 2;
+        this.bola.body.setCircle(raioBola);
+        this.bola.body.setOffset(this.bola.displayWidth / 2 - raioBola, this.bola.displayHeight / 2 - raioBola);
 
         this.physics.add.collider(this.jogador1, this.bola);
         this.physics.add.collider(this.jogador2, this.bola);
@@ -49,28 +53,83 @@ export default class PlayScene extends Phaser.Scene {
 
         this.cursors = this.input.keyboard.createCursorKeys();
         this.chuteKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+        this.chuteKey2 = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SHIFT);
         this.keysWASD = this.input.keyboard.addKeys({
             up: Phaser.Input.Keyboard.KeyCodes.W,
             left: Phaser.Input.Keyboard.KeyCodes.A,
             down: Phaser.Input.Keyboard.KeyCodes.S,
             right: Phaser.Input.Keyboard.KeyCodes.D
         });
-        this.chuteKey2 = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SHIFT);
 
         this.controlosAtivos = false;
-
         this.golos = { vermelho: 0, azul: 0 };
         this.timer = 120;
-        this.timerText = this.add.text(60, 50, '', { fontSize: '32px', color: '#fff' });
-        this.golosText = this.add.text(60, 90, '', { fontSize: '24px', color: '#fff' });
+
+        this.uiContainer = this.add.rectangle(centerX, 60, 340, 80, 0x000000, 0.6)
+            .setOrigin(0.5)
+            .setStrokeStyle(2, 0xffffff)
+            .setDepth(0);
+
+        this.timerText = this.add.text(centerX, 50, '', {
+            fontSize: '24px',
+            fontFamily: 'Arial',
+            color: '#ffffff'
+        }).setOrigin(0.5).setDepth(1);
+
+        this.scoreVermelho = this.add.text(centerX - 80, 75, '', {
+            fontSize: '20px',
+            fontFamily: 'Arial',
+            color: '#ff0000' 
+        }).setOrigin(0.5).setDepth(1);
+
+        this.scoreSeparador = this.add.text(centerX, 75, '|', {
+            fontSize: '20px',
+            fontFamily: 'Arial',
+            color: '#ffffff'
+        }).setOrigin(0.5).setDepth(1);
+
+        this.scoreAzul = this.add.text(centerX + 80, 75, '', {
+            fontSize: '20px',
+            fontFamily: 'Arial',
+            color: '#1e90ff' 
+        }).setOrigin(0.5).setDepth(1);
+
+        this.goloMensagem = this.add.text(centerX, centerY - 100, '', {
+            fontSize: '36px',
+            fontFamily: 'Arial',
+            color: '#ffffff',
+            backgroundColor: 'rgba(0, 0, 0, 0.6)',
+            padding: { x: 15, y: 10 }
+        }).setOrigin(0.5).setDepth(10).setVisible(false);
 
         this.atualizarUI();
         this.iniciarJogo();
+
+        this.input.keyboard.on('keydown-ESC', () => {
+            if (this.controlosAtivos) {
+                this.scene.launch('PauseScene');
+                this.scene.pause();
+            }
+        });
+    }
+
+    mostrarMensagemGolo(texto, cor) {
+        this.goloMensagem.setText(texto);
+        this.goloMensagem.setColor(cor);
+        this.goloMensagem.setVisible(true);
+
+        if (this.tempoMensagem) this.time.removeEvent(this.tempoMensagem);
+
+        this.tempoMensagem = this.time.addEvent({
+            delay: 2000,
+            callback: () => this.goloMensagem.setVisible(false)
+        });
     }
 
     atualizarUI() {
         this.timerText.setText(`Tempo: ${this.timer}s`);
-        this.golosText.setText(`Vermelho: ${this.golos.vermelho} | Azul: ${this.golos.azul}`);
+        this.scoreVermelho.setText(`Vermelho: ${this.golos.vermelho}`);
+        this.scoreAzul.setText(`Azul: ${this.golos.azul}`);
     }
 
     iniciarJogo() {
@@ -86,9 +145,7 @@ export default class PlayScene extends Phaser.Scene {
 
         let tempo = 5;
         this.contadorTexto = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, tempo, {
-            fontSize: '80px',
-            color: '#ffffff',
-            fontFamily: 'Arial'
+            fontSize: '80px', color: '#ffffff', fontFamily: 'Arial'
         }).setOrigin(0.5);
 
         this.contagem = this.time.addEvent({
@@ -116,7 +173,10 @@ export default class PlayScene extends Phaser.Scene {
         const dx = this.bola.x - jogador.x;
         const dy = this.bola.y - jogador.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist > 0.1) {
+        const raioJogador = jogador.displayWidth * 0.5;
+        const raioBola = this.bola.displayWidth * 0.5;
+
+        if (dist <= raioJogador + raioBola + 2) {
             const chuteForca = 300;
             const normX = dx / dist;
             const normY = dy / dist;
@@ -179,23 +239,17 @@ export default class PlayScene extends Phaser.Scene {
         const j2 = this.jogador2;
 
         if (this.modo === 'amigo' || (this.modo === 'cpu' && this.equipa === 'vermelho')) {
-            if (this.keysWASD.left.isDown) j1.setVelocityX(-speed);
-            else if (this.keysWASD.right.isDown) j1.setVelocityX(speed);
-            else j1.setVelocityX(0);
-
-            if (this.keysWASD.up.isDown) j1.setVelocityY(-speed);
-            else if (this.keysWASD.down.isDown) j1.setVelocityY(speed);
-            else j1.setVelocityY(0);
+            j1.setVelocity(
+                this.keysWASD.left.isDown ? -speed : this.keysWASD.right.isDown ? speed : 0,
+                this.keysWASD.up.isDown ? -speed : this.keysWASD.down.isDown ? speed : 0
+            );
         }
 
         if (this.modo === 'amigo' || (this.modo === 'cpu' && this.equipa === 'azul')) {
-            if (this.cursors.left.isDown) j2.setVelocityX(-speed);
-            else if (this.cursors.right.isDown) j2.setVelocityX(speed);
-            else j2.setVelocityX(0);
-
-            if (this.cursors.up.isDown) j2.setVelocityY(-speed);
-            else if (this.cursors.down.isDown) j2.setVelocityY(speed);
-            else j2.setVelocityY(0);
+            j2.setVelocity(
+                this.cursors.left.isDown ? -speed : this.cursors.right.isDown ? speed : 0,
+                this.cursors.up.isDown ? -speed : this.cursors.down.isDown ? speed : 0
+            );
         }
 
         if (this.modo === 'cpu' && this.controlosAtivos) {
@@ -236,10 +290,18 @@ export default class PlayScene extends Phaser.Scene {
         const golDireito = this.bola.x > this.cameras.main.width - 60 && naBalizaY;
 
         if (golEsquerdo || golDireito) {
-            if (golEsquerdo) this.golos.azul++;
-            else this.golos.vermelho++;
+            this.controlosAtivos = false;
+            if (golEsquerdo) {
+                this.golos.azul++;
+                this.mostrarMensagemGolo('Azul marcou!', '#1e90ff');
+            } else {
+                this.golos.vermelho++;
+                this.mostrarMensagemGolo('Vermelho marcou!', '#ff0000');
+            }
             this.atualizarUI();
-            this.iniciarJogo();
+            this.time.delayedCall(2000, () => {
+                this.iniciarJogo();
+            });
         }
     }
 }
