@@ -8,6 +8,12 @@ export default class MenuScene extends Phaser.Scene {
     }
 
     create() {
+        this.mostrarMenuPrincipal();
+    }
+
+    mostrarMenuPrincipal() {
+        this.children.removeAll(); // limpar cena
+
         const centerX = this.cameras.main.centerX;
         const centerY = this.cameras.main.centerY;
 
@@ -29,9 +35,57 @@ export default class MenuScene extends Phaser.Scene {
             fontSize: '24px', backgroundColor: '#6c757d', color: '#ffffff', padding: { x: 20, y: 10 }
         }).setOrigin(0.5).setInteractive();
 
-        botaoCPU.on('pointerdown', () => this.scene.start('GameScene', { modo: 'cpu' }));
-        botaoAmigo.on('pointerdown', () => this.scene.start('GameScene', { modo: 'amigo' }));
+        botaoCPU.on('pointerdown', () => this.escolherEquipa('cpu'));
+        botaoAmigo.on('pointerdown', () => this.escolherEquipa('amigo'));
         botaoInstrucoes.on('pointerdown', () => this.mostrarInstrucoes());
+    }
+
+    escolherEquipa(modo) {
+        const centerX = this.cameras.main.centerX;
+        const centerY = this.cameras.main.centerY;
+
+        this.children.removeAll();
+
+        this.add.image(centerX, centerY, 'campo')
+            .setDisplaySize(this.cameras.main.width, this.cameras.main.height);
+
+        this.add.text(centerX, 100, 'Escolhe a tua equipa:', {
+            fontSize: '32px',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+
+        const btnVermelho = this.add.text(centerX - 120, centerY, '🔴 Vermelho', {
+            fontSize: '28px',
+            backgroundColor: '#8B0000',
+            color: '#ffffff',
+            padding: { x: 20, y: 10 }
+        }).setOrigin(0.5).setInteractive();
+
+        const btnAzul = this.add.text(centerX + 120, centerY, '🔵 Azul', {
+            fontSize: '28px',
+            backgroundColor: '#0033A0',
+            color: '#ffffff',
+            padding: { x: 20, y: 10 }
+        }).setOrigin(0.5).setInteractive();
+
+        const btnVoltar = this.add.text(centerX, centerY + 120, '⬅ Voltar', {
+            fontSize: '24px',
+            backgroundColor: '#6c757d',
+            color: '#ffffff',
+            padding: { x: 15, y: 8 }
+        }).setOrigin(0.5).setInteractive();
+
+        btnVermelho.on('pointerdown', () => {
+            this.scene.start('PlayScene', { modo, equipa: 'vermelho' });
+        });
+
+        btnAzul.on('pointerdown', () => {
+            this.scene.start('PlayScene', { modo, equipa: 'azul' });
+        });
+
+        btnVoltar.on('pointerdown', () => {
+            this.mostrarMenuPrincipal();
+        });
     }
 
     mostrarInstrucoes() {

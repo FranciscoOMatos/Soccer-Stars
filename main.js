@@ -11,7 +11,7 @@ const config = {
         default: 'arcade',
         arcade: {
             gravity: { y: 0 },
-            debug: true // Ativa visualização dos corpos físicos
+            debug: false 
         }
     },
     scale: {
