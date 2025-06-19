@@ -28,13 +28,13 @@ export default class PauseScene extends Phaser.Scene {
         }).setOrigin(0.5).setInteractive();
 
         btnContinuar.on('pointerdown', () => {
-            this.scene.stop(); // fecha PauseScene
-            this.scene.resume('PlayScene'); // retoma o jogo
+            this.scene.stop(); 
+            this.scene.resume('PlayScene'); 
         });
 
         btnMenu.on('pointerdown', () => {
-            this.scene.stop('PlayScene'); // termina o jogo
-            this.scene.start('MenuScene'); // volta ao menu
+            this.scene.stop('PlayScene'); 
+            this.scene.start('MenuScene'); 
         });
     }
 }
