@@ -20,7 +20,7 @@ export default class MenuScene extends Phaser.Scene {
         this.add.image(centerX, centerY, 'campo')
             .setDisplaySize(this.cameras.main.width, this.cameras.main.height);
 
-        this.add.text(centerX, centerY - 200, 'SOCCER', { fontSize: '48px', color: '#ffffff' }).setOrigin(0.5);
+        this.add.text(centerX, centerY - 200, 'FUTEBOL', { fontSize: '48px', color: '#ffffff' }).setOrigin(0.5);
         this.add.text(centerX, centerY - 140, 'STARS', { fontSize: '48px', color: '#ffffff' }).setOrigin(0.5);
 
         const botaoCPU = this.add.text(centerX, centerY - 20, '🤖 Contra o Computador', {
