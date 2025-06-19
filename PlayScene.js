@@ -130,6 +130,9 @@ export default class PlayScene extends Phaser.Scene {
         this.controlosAtivos = false;
         this.bola.setPosition(this.cameras.main.centerX, this.cameras.main.centerY);
         this.bola.setVelocity(0);
+        this.bola.setVisible(true);
+        this.bola.body.enable = true;
+
         this.jogador1.setVelocity(0);
         this.jogador2.setVelocity(0);
         this.jogador1.setPosition(this.posInicialJogador1.x, this.posInicialJogador1.y);
@@ -211,7 +214,7 @@ export default class PlayScene extends Phaser.Scene {
                         fontSize: '34px', fontFamily: 'Georgia', fontStyle: 'bold', color: '#ffffff'
                     }).setOrigin(0.5).setDepth(11);
 
-                    const btnJogarNovamente = this.add.text(centerX, centerY + 60, '🔁 Jogar Novamente', {
+                    const btnJogarNovamente = this.add.text(centerX, centerY + 70, '🔁 Jogar Novamente', {
                         fontSize: '26px', backgroundColor: '#28a745', color: '#ffffff', padding: { x: 20, y: 10 }
                     }).setOrigin(0.5).setDepth(11).setInteractive();
 
@@ -219,7 +222,7 @@ export default class PlayScene extends Phaser.Scene {
                         this.scene.restart({ modo: this.modo, equipa: this.equipa });
                     });
 
-                    const btnVoltarMenu = this.add.text(centerX, centerY + 120, '🏠 Menu Principal', {
+                    const btnVoltarMenu = this.add.text(centerX, centerY + 130, '🏠 Menu Principal', {
                         fontSize: '26px', backgroundColor: '#dc3545', color: '#ffffff', padding: { x: 20, y: 10 }
                     }).setOrigin(0.5).setDepth(11).setInteractive();
 
@@ -279,19 +282,24 @@ export default class PlayScene extends Phaser.Scene {
         }
 
         if (Phaser.Input.Keyboard.JustDown(this.chuteKey2)) this.tentarChutar(j1);
-        if (this.modo === 'amigo' && Phaser.Input.Keyboard.JustDown(this.chuteKey)) this.tentarChutar(j2);
+        if ((this.modo === 'amigo' || (this.modo === 'cpu' && this.equipa === 'azul')) && Phaser.Input.Keyboard.JustDown(this.chuteKey)) {
+            this.tentarChutar(j2);
+        }
 
-        const alturaBalizaTop = 220;
-        const alturaBalizaBot = 460;
+        const alturaBalizaTop = 260;
+        const alturaBalizaBot = 420;
         const naBalizaY = this.bola.y > alturaBalizaTop && this.bola.y < alturaBalizaBot;
 
-        const golEsquerdo = this.bola.x < 60 && naBalizaY;
-        const golDireito = this.bola.x > this.cameras.main.width - 60 && naBalizaY;
+        const golEsquerdo = this.bola.x < 60 && naBalizaY && this.bola.body.velocity.x < 0;
+        const golDireito = this.bola.x > this.cameras.main.width - 60 && naBalizaY && this.bola.body.velocity.x > 0;
 
         if ((golEsquerdo || golDireito) && !this.goloEmAndamento) {
             this.goloEmAndamento = true;
             this.controlosAtivos = false;
             this.temporizadorAtivo = false;
+
+            this.bola.setVisible(false);
+            this.bola.body.enable = false;
 
             if (golEsquerdo) {
                 this.golos.azul++;
