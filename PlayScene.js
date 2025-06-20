@@ -115,7 +115,6 @@ export default class PlayScene extends Phaser.Scene {
     }
 
     iniciarJogo() {
-        this.timer = 90;
         this.temporizadorIniciado = false;
 
         if (this.temporizador) {
