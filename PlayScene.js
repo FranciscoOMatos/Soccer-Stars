@@ -21,6 +21,15 @@ export default class PlayScene extends Phaser.Scene {
         const centerX = width / 2;
         const centerY = height / 2;
 
+        this.timer = 90;
+        this.temporizadorAtivo = false;
+        this.temporizadorIniciado = false;
+
+        if (this.temporizador) {
+            this.temporizador.remove(false);
+            this.temporizador = null;
+        }
+
         this.add.image(centerX, centerY, 'campo').setDisplaySize(width, height);
         this.ultimoChuteBot = 0;
         this.goloEmAndamento = false;
@@ -64,8 +73,6 @@ export default class PlayScene extends Phaser.Scene {
 
         this.controlosAtivos = false;
         this.golos = { vermelho: 0, azul: 0 };
-        this.timer = 90;
-        this.temporizadorAtivo = true;
 
         this.uiContainer = this.add.rectangle(centerX, 60, 340, 80, 0x000000, 0.6)
             .setOrigin(0.5)
@@ -107,26 +114,15 @@ export default class PlayScene extends Phaser.Scene {
         });
     }
 
-    mostrarMensagemGolo(texto, cor) {
-        this.goloMensagem.setText(texto);
-        this.goloMensagem.setColor(cor);
-        this.goloMensagem.setVisible(true);
-
-        if (this.tempoMensagem) this.time.removeEvent(this.tempoMensagem);
-
-        this.tempoMensagem = this.time.addEvent({
-            delay: 2000,
-            callback: () => this.goloMensagem.setVisible(false)
-        });
-    }
-
-    atualizarUI() {
-        this.timerText.setText(`Tempo: ${this.timer}s`);
-        this.scoreVermelho.setText(`Vermelho: ${this.golos.vermelho}`);
-        this.scoreAzul.setText(`Azul: ${this.golos.azul}`);
-    }
-
     iniciarJogo() {
+        this.timer = 90;
+        this.temporizadorIniciado = false;
+
+        if (this.temporizador) {
+            this.temporizador.remove(false);
+            this.temporizador = null;
+        }
+
         this.controlosAtivos = false;
         this.bola.setPosition(this.cameras.main.centerX, this.cameras.main.centerY);
         this.bola.setVelocity(0);
@@ -143,9 +139,17 @@ export default class PlayScene extends Phaser.Scene {
         let tempo = 5;
         this.temporizadorAtivo = false;
 
-        this.contadorTexto = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, tempo, {
-            fontSize: '80px', color: '#ffffff', fontFamily: 'Arial'
-        }).setOrigin(0.5);
+        this.contadorTexto = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY - 40, tempo, {
+            fontSize: '100px',
+            color: '#ffffff',
+            fontFamily: 'Arial',
+            fontStyle: 'bold',
+            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+            padding: { x: 30, y: 20 },
+            stroke: '#000000',
+            strokeThickness: 6
+        }).setOrigin(0.5).setDepth(15);
+
 
         this.contagem = this.time.addEvent({
             delay: 1000,
@@ -166,6 +170,25 @@ export default class PlayScene extends Phaser.Scene {
                     }
                 }
             }
+        });
+    }
+
+    atualizarUI() {
+        this.timerText.setText(`Tempo: ${this.timer}s`);
+        this.scoreVermelho.setText(`Vermelho: ${this.golos.vermelho}`);
+        this.scoreAzul.setText(`Azul: ${this.golos.azul}`);
+    }
+
+    mostrarMensagemGolo(texto, cor) {
+        this.goloMensagem.setText(texto);
+        this.goloMensagem.setColor(cor);
+        this.goloMensagem.setVisible(true);
+
+        if (this.tempoMensagem) this.time.removeEvent(this.tempoMensagem);
+
+        this.tempoMensagem = this.time.addEvent({
+            delay: 2000,
+            callback: () => this.goloMensagem.setVisible(false)
         });
     }
 
